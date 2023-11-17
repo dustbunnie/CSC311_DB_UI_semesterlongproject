@@ -14,6 +14,7 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
@@ -22,6 +23,7 @@ import model.Person;
 import service.MyLogger;
 
 import java.io.File;
+import java.io.FileReader;
 import java.net.URL;
 import java.time.LocalDate;
 import java.util.Optional;
@@ -29,8 +31,12 @@ import java.util.ResourceBundle;
 
 public class DB_GUI_Controller implements Initializable {
 
+    boolean flag = false;
+
     @FXML
-    TextField first_name, last_name, department, major, email, imageURL;
+    TextField first_name, last_name, department, email, imageURL;
+    @FXML
+    ComboBox major;
     @FXML
     ImageView img_view;
     @FXML
@@ -41,8 +47,14 @@ public class DB_GUI_Controller implements Initializable {
     private TableColumn<Person, Integer> tv_id;
     @FXML
     private TableColumn<Person, String> tv_fn, tv_ln, tv_department, tv_major, tv_email;
+
+    @FXML
+    Label BottomText;
     private final DbConnectivityClass cnUtil = new DbConnectivityClass();
     private final ObservableList<Person> data = cnUtil.getData();
+
+    @FXML
+     Button EditButton, DeleteButton;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -54,22 +66,148 @@ public class DB_GUI_Controller implements Initializable {
             tv_major.setCellValueFactory(new PropertyValueFactory<>("major"));
             tv_email.setCellValueFactory(new PropertyValueFactory<>("email"));
             tv.setItems(data);
+
+            major.getItems().addAll("CS", "CPIS", "English", "Math", "Science");
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+
+        // Validate Fields
+
+        first_name.setOnKeyPressed(event -> {
+
+            if (event.getCode() != KeyCode.TAB && flag) {
+                first_name.setStyle("-fx-border-color: black ; -fx-border-width: 1px ;");
+
+
+                flag = false;
+            }
+
+        });
+        first_name.focusedProperty().addListener((observable, oldValue, newValue) -> {
+
+            if (first_name.getText().matches("[A-Za-z_\\s]{2,25}")) {
+               // first_name.setEditable(false);
+                first_name.setBorder(null);
+            } else {
+
+                first_name.setStyle("-fx-border-color: red ; -fx-border-width: 4px ;");
+                first_name.setVisible(true);
+                first_name.requestFocus();
+                flag = true;
+            }});
+
+        // Last name field
+
+        last_name.setOnKeyPressed(event -> {
+
+            if (event.getCode() != KeyCode.TAB && flag) {
+                last_name.setStyle("-fx-border-color: black ; -fx-border-width: 1px ;");
+
+
+                flag = false;
+            }
+
+        });
+        last_name.focusedProperty().addListener((observable2, oldValue2, newValue2) -> {
+
+            if (last_name.getText().matches("[A-Za-z_\\s]{2,25}")) {
+                //last_name.setEditable(false);
+                last_name.setBorder(null);
+            } else {
+
+                last_name.setStyle("-fx-border-color: red ; -fx-border-width: 4px ;");
+                last_name.setVisible(true);
+                last_name.requestFocus();
+                flag = true;
+            }
+
+
+        });
+//dept field
+
+        department.setOnKeyPressed(event -> {
+
+            if (event.getCode() != KeyCode.TAB && flag) {
+                department.setStyle("-fx-border-color: black ; -fx-border-width: 1px ;");
+
+
+                flag = false;
+            }
+
+        });
+        department.focusedProperty().addListener((observable, oldValue, newValue) -> {
+
+            if (department.getText().matches("[A-Za-z_\\s]{2,25}")) {
+                //department.setEditable(false);
+                department.setBorder(null);
+            } else {
+
+                department.setStyle("-fx-border-color: red ; -fx-border-width: 4px ;");
+                department.setVisible(true);
+                department.requestFocus();
+                flag = true;
+            }});
+//email field
+
+        email.setOnKeyPressed(event -> {
+
+            if (event.getCode() != KeyCode.TAB && flag) {
+                email.setStyle("-fx-border-color: black ; -fx-border-width: 1px ;");
+
+
+                flag = false;
+            }
+
+        });
+        email.focusedProperty().addListener((observable, oldValue, newValue) -> {
+
+            if (email.getText().matches("[A-Za-z0-9]{3,15}@farmingdale.edu")) {
+                //email.setEditable(false);
+                email.setBorder(null);
+            } else {
+
+                email.setStyle("-fx-border-color: red ; -fx-border-width: 4px ;");
+                email.setVisible(true);
+                email.requestFocus();
+                flag = true;
+            }});
+
+
+        first_name.setBorder(null);
+        last_name.setBorder(null);
+        email.setBorder(null);
+        department.setBorder(null);
+
     }
+
+    @FXML
+    public void importCSV(){
+
+    }
+    @FXML
+    public void exportCSV() {
+
+        }
+
+
 
     @FXML
     protected void addNewRecord() {
 
             Person p = new Person(first_name.getText(), last_name.getText(), department.getText(),
-                    major.getText(), email.getText(), imageURL.getText());
+                    major.getSelectionModel().getSelectedItem().toString(), email.getText(), imageURL.getText());
             cnUtil.insertUser(p);
             cnUtil.retrieveId(p);
             p.setId(cnUtil.retrieveId(p));
             data.add(p);
-            clearForm();
 
+        first_name.setBorder(null);
+        last_name.setBorder(null);
+        email.setBorder(null);
+        department.setBorder(null);
+
+        BottomText.setText("Record Successfully Added");
     }
 
     @FXML
@@ -77,10 +215,22 @@ public class DB_GUI_Controller implements Initializable {
         first_name.setText("");
         last_name.setText("");
         department.setText("");
-        major.setText("");
+
         email.setText("");
         imageURL.setText("");
+
+        EditButton.setDisable(true);
+        DeleteButton.setDisable(true);
+
+        first_name.setBorder(null);
+        last_name.setBorder(null);
+        email.setBorder(null);
+        department.setBorder(null);
+
+        BottomText.setText("");
     }
+
+
 
     @FXML
     protected void logOut(ActionEvent actionEvent) {
@@ -119,11 +269,18 @@ public class DB_GUI_Controller implements Initializable {
         Person p = tv.getSelectionModel().getSelectedItem();
         int index = data.indexOf(p);
         Person p2 = new Person(index + 1, first_name.getText(), last_name.getText(), department.getText(),
-                major.getText(), email.getText(),  imageURL.getText());
+                major.getSelectionModel().getSelectedItem().toString(), email.getText(),  imageURL.getText());
         cnUtil.editUser(p.getId(), p2);
         data.remove(p);
         data.add(index, p2);
         tv.getSelectionModel().select(index);
+
+        first_name.setBorder(null);
+        last_name.setBorder(null);
+        email.setBorder(null);
+        department.setBorder(null);
+
+        BottomText.setText("Record Successfully Edited");
     }
 
     @FXML
@@ -133,6 +290,13 @@ public class DB_GUI_Controller implements Initializable {
         cnUtil.deleteRecord(p);
         data.remove(index);
         tv.getSelectionModel().select(index);
+
+        first_name.setBorder(null);
+        last_name.setBorder(null);
+        email.setBorder(null);
+        department.setBorder(null);
+
+        BottomText.setText("Record Successfully Deleted");
     }
 
     @FXML
@@ -154,9 +318,21 @@ public class DB_GUI_Controller implements Initializable {
         first_name.setText(p.getFirstName());
         last_name.setText(p.getLastName());
         department.setText(p.getDepartment());
-        major.setText(p.getMajor());
+        major.setSelectionModel(major.getSelectionModel());
+        major.getSelectionModel().select(p.getMajor());
+        major.setSelectionModel(major.getSelectionModel());
         email.setText(p.getEmail());
         imageURL.setText(p.getImageURL());
+
+        EditButton.setDisable(false);
+        DeleteButton.setDisable(false);
+
+        first_name.setBorder(null);
+        last_name.setBorder(null);
+        email.setBorder(null);
+        department.setBorder(null);
+
+        BottomText.setText("");
     }
 
     public void lightTheme(ActionEvent actionEvent) {
