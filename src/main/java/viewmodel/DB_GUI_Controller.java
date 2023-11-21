@@ -22,12 +22,10 @@ import javafx.stage.Stage;
 import model.Person;
 import service.MyLogger;
 
-import java.io.File;
-import java.io.FileReader;
+import java.io.*;
 import java.net.URL;
 import java.time.LocalDate;
-import java.util.Optional;
-import java.util.ResourceBundle;
+import java.util.*;
 
 public class DB_GUI_Controller implements Initializable {
 
@@ -184,11 +182,72 @@ public class DB_GUI_Controller implements Initializable {
     @FXML
     public void importCSV(){
 
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Open CSV File");
+        fileChooser.getExtensionFilters().addAll(
+                new FileChooser.ExtensionFilter("CSV Files", "*.csv")
+        );
+        File f=fileChooser.showOpenDialog(first_name.getScene().getWindow());
+
+        if (f != null) {
+
+
+            try {
+                tv_id.setText(Arrays.toString(readFile(f.getAbsolutePath())));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+    }
+
+    public  String[] readFile(String fileName) throws IOException {
+        FileReader fileReader = new FileReader(fileName);
+        BufferedReader bufferedReader = new BufferedReader(fileReader);
+        List<String> lines = new ArrayList<String>();
+        String line = null;
+        while ((line = bufferedReader.readLine()) != null) {
+            lines.add(line +"\n");
+        }
+        bufferedReader.close();
+        return lines.toArray(new String[lines.size()]);
     }
     @FXML
     public void exportCSV() {
 
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Save CSV File");
+        fileChooser.getExtensionFilters().addAll(
+                new FileChooser.ExtensionFilter("CSV Files", "*.csv")
+        );
+        File f = fileChooser.showSaveDialog(first_name.getScene().getWindow());
+
+        if (f != null) {
+            try {
+                writeFile(f.getAbsolutePath(), getData());
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+
         }
+
+        }
+
+    public void writeFile(String file, String[] data) throws IOException {
+        try {
+            PrintWriter writer;
+            writer = new PrintWriter(file);
+            writer.println(Arrays.toString(data));
+            writer.close();
+        } catch (IOException ex) {
+            System.out.println("Error writing to file '" + file + "'");
+        }
+
+    }
+
+    public String[] getData(){
+        return tv.toString().split(",");
+    }
 
 
 
